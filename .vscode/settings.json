@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "cstdio": "c",
+        "main.h": "c",
+        "task.h": "c",
+        "adc.h": "c",
+        "dma.h": "c",
+        "i_usart.h": "c",
+        "stdio.h": "c",
+        "usart.h": "c",
+        "reent.h": "c",
+        "cstdlib": "c",
+        "math.h": "c",
+        "cat9555.h": "c",
+        "cstdint": "c",
+        "module_dvm_v2.h": "c",
+        "std_i2c.h": "c"
+    }
+}
