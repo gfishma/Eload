@@ -167,14 +167,18 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
 
 void Task_DisplayUpdate(void *argument)
 {
-    /* Read and display current values */
-    uint16_t voltage_int = (uint16_t)g_voltage;
-    uint16_t current_int = (uint16_t)g_current;
-    uint16_t power_int = (uint16_t)(g_voltage * g_current);
-    
-    float voltage_frac = g_voltage - voltage_int;
-    float current_frac = g_current - current_int;
-    float power_frac = (g_voltage * g_current) - power_int;
+    /* Read and display current values (single read to avoid race with DataAcquisition task) */
+    float voltage = g_voltage;
+    float current = g_current;
+    float power = voltage * current;
+
+    uint16_t voltage_int = (uint16_t)voltage;
+    uint16_t current_int = (uint16_t)current;
+    uint16_t power_int = (uint16_t)power;
+
+    float voltage_frac = voltage - voltage_int;
+    float current_frac = current - current_int;
+    float power_frac = power - power_int;
     
     /* Display voltage (X.XXX V) */
     LCD_ShowxNum(CFG_VOLTAGE_INT_DISPLAY_X, CFG_VOLTAGE_INT_DISPLAY_Y, voltage_int, 2, 32, 0);

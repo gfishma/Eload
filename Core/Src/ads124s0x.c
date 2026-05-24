@@ -43,6 +43,9 @@ long ADS124S0x_Init(ADS124S0x_Def* p)
 
 	//IO Init
 	gpio_config(&p->In_Drdy);
+	// DRDY is open-drain active-low on ADS124S0x, needs pull-up on STM32 side
+	p->In_Drdy.init_struct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(p->In_Drdy.port, &p->In_Drdy.init_struct);
 //	StdDio_Cfg( p->In_Drdy, 0, 0, NULL);
 	return 0;
 }
