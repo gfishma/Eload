@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i '222,226d' Source/SCMD/App/scmd_switch.c)",
+      "Bash(sed -i '221a\\\\\\\\t/* skip '\\\\''\\('\\\\'' and parse X -- first param has no leading comma */\\\\n\\\\tpNet = strstr\\(pNet, \"\\(\"\\);\\\\n\\\\tif \\(pNet == NULL\\) return __scmd_ErrMsg\\(\"<switch set\\(error\\), '\\\\''\\('\\\\'' not found.\\\\\\\\r\\\\\\\\n\"\\);\\\\n\\\\tpNet += 1;\\\\n\\\\n\\\\tpNet = str_GetHexDec\\(pNet, pEnd, \\\\&x_val\\);\\\\n\\\\tif \\(pNet == NULL\\) return __scmd_ErrMsg\\(\"<switch set\\(error\\), X not found.\\\\\\\\r\\\\\\\\n\"\\);\\\\n\\\\tif \\(x_val < 1 || x_val > SM_INPUT_TOTAL\\)\\\\n\\\\t\\\\treturn __scmd_ErrMsg\\(\"<switch set\\(error\\), X over range \\(1-300\\).\\\\\\\\r\\\\\\\\n\"\\);' Source/SCMD/App/scmd_switch.c)"
+    ]
+  }
+}

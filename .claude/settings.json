@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" diff --stat)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" add Source/Module/Module_SwitchMatrix.c Source/Module/Module_SwitchMatrix.h Source/SCMD/App/scmd_switch.c)",
+      "Bash(git -C 'e:\\\\OQC\\\\SailCode_3\\\\SailCode_3' commit -m ' *)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" diff Source/SCMD/App/scmd_config.c)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" add Source/Module/Module_EMIO.c Source/SCMD/App/scmd_emio.c Source/SCMD/App/scmd_switch.c)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" add Source/SCMD/App/scmd_switch.c)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" add Source/SCMD/App/scmd_emio.c)",
+      "Bash(git -C \"e:\\\\OQC\\\\SailCode_3\\\\SailCode_3\" add Source/Module/Module_EMIO.c Source/Module/Module_EMIO.h Source/SCMD/App/scmd_emio.c)",
+      "Bash(find /c/Users/10631/.platformio -name \"openocd.exe\" -type f 2>/dev/null | head -5)",
+      "Read(//c/Users/10631/.platformio/**)",
+      "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init; reset halt; stm32f4x mass_erase 0; exit\")",
+      "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init\" -c \"reset halt\" -c \"flash erase_sector 0 0 4\" -c \"exit\")",
+      "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init\" -c \"reset halt\" -c \"flash erase_sector 0 0 11\" -c \"exit\")"
+    ]
+  }
+}
