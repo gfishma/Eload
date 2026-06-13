@@ -1,0 +1,9 @@
+# Serial capture: COM3 @ 115200 baud
+# Started: 2026-06-08T23:50:08.323165
+# Duration: 10.0s
+#============================================================
+
+[23:50:09.326] set_curr(500.00mA)
+[23:50:09.326] >status
+[23:50:09.326] [INF] TASK: Current ramped to: 500.00 mA
+[23:50:09.326] [INF] TASK: UART current command applied: 500.00 mA
