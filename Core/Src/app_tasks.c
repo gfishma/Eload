@@ -24,6 +24,7 @@
 #include "Temp.h"
 #include "mcp3421.h"
 #include "scmd_dvm.h"
+#include "calibration.h"
 
 extern char buffer_rx[255];
 extern uint8_t Rec_Length;
@@ -61,7 +62,6 @@ static void Task_ProcessUARTCommand(void)
         float request_ma = Task_ParseCurrentValue(buffer_rx);
         if (request_ma >= 0.0f) {
             if (Task_ApplyCurrentSetting(request_ma) == HAL_OK) {
-                // Task_UpdateCurrentDisplay(g_current_set);
                 LOG_INFO(LOG_MOD_TASK, "UART current command applied: %.2f mA", g_current_set);
             } else {
                 LOG_ERROR(LOG_MOD_TASK, "Failed to apply UART current command");
@@ -69,6 +69,40 @@ static void Task_ProcessUARTCommand(void)
         } else {
             LOG_WARN(LOG_MOD_TASK, "Invalid UART current value");
         }
+    } else if (strstr(buffer_rx, ">help") != NULL) {
+        printf("\r\n");
+        printf("========== Core Board Eload  ==========\r\n");
+        printf(" set_curr(XXXX.XXmA)   Set target current\r\n");
+        printf("   e.g. set_curr(1000.00mA) → 1A\r\n");
+        printf("   e.g. set_curr(5000.00mA) → 5A\r\n");
+        printf("   Range: 0 ~ %d mA\r\n", CFG_MAX_CURRENT_MA);
+        printf("\r\n");
+        printf(" >help                 Show this help\r\n");
+        printf(" >status               Show current status\r\n");
+        printf("\r\n");
+        printf("---- Calibration ----\r\n");
+        printf(" >eload cal            Run calibration (8pts, 0~10A)\r\n");
+        printf(" >eload info           Show calibration table\r\n");
+        printf("========================================\r\n\r\n");
+        LOG_INFO(LOG_MOD_TASK, "Help command processed");
+    } else if (strstr(buffer_rx, ">status") != NULL) {
+        printf("\r\n");
+        printf("========== Current Status ==========\r\n");
+        printf(" Set Current:   %.0f mA (%.2f A)\r\n", g_current_set, g_current_set / 1000.0f);
+        printf(" Meas Voltage:  %.2f V\r\n", g_voltage);
+        printf(" Meas Current:  %.2f A\r\n", g_current);
+        printf(" Meas Power:    %.2f W\r\n", g_voltage * g_current);
+        printf(" Temperature:   %.1f C\r\n", g_temperature);
+        printf(" Calibration:   %s\r\n", Calibration_IsLoaded() ? "ACTIVE" : "NONE");
+        printf("====================================\r\n\r\n");
+        LOG_INFO(LOG_MOD_TASK, "Status command processed");
+    } else if (strstr(buffer_rx, ">eload cal") != NULL) {
+        printf("\r\n========== Running Calibration ==========\r\n");
+        Calibration_Run();
+        LOG_INFO(LOG_MOD_TASK, "Calibration command executed");
+    } else if (strstr(buffer_rx, ">eload info") != NULL) {
+        Calibration_Print();
+        LOG_INFO(LOG_MOD_TASK, "Calibration info command processed");
     } else {
         LOG_WARN(LOG_MOD_TASK, "Unsupported UART command");
     }
@@ -150,7 +184,18 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
         LOG_ERROR(LOG_MOD_TASK, "Failed to enable power");
         return HAL_ERROR;
     }
-    
+
+    /* Apply calibration correction if available */
+    if (Calibration_IsLoaded())
+    {
+        float corrected = Calibration_Apply(current_ma);
+        if (corrected != current_ma)
+        {
+            LOG_DEBUG(LOG_MOD_TASK, "Cal applied: %.1f -> %.1f mA", current_ma, corrected);
+            current_ma = corrected;
+        }
+    }
+
     /* Set current value */
     if (AD5667_WritData_setcurr((uint16_t)current_ma) != HAL_OK) {
         LOG_ERROR(LOG_MOD_TASK, "Failed to set current");

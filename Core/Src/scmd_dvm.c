@@ -73,8 +73,7 @@ float DVM_GET(unsigned char ch)
 	unsigned char DVM_CH;
 	DVM_CH=ch;
 
-	long ret = DVM_V2_GetVolt(&reg_list[regIndex], DVM_CH, Dvm_V2_Rang25V, Dvm_V2_Smp_Time_100MS, &volt);
-	printf("[DVM CH%d] ret=%ld volt=%.3f\r\n", (int)ch, ret, (double)volt);
+	DVM_V2_GetVolt(&reg_list[regIndex], DVM_CH, Dvm_V2_Rang25V, Dvm_V2_Smp_Time_100MS, &volt);
 	return volt;
 }
 
