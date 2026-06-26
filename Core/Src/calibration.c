@@ -110,12 +110,16 @@ static int measure_point(float setpoint_ma, float *pMeasured_ma)
 
 /* ---- Public API ---- */
 
+/* Flag to pause DataAcquisition during calibration */
+volatile int g_cal_running = 0;
+
 int Calibration_Run(void)
 {
     int i, ret;
     cal_point_t temp_points[CAL_POINT_COUNT];
     int ok_count = 0;
 
+    g_cal_running = 1;  /* pause DataAcquisition to avoid bus conflict */
     printf("\r\n========== Eload Calibration ==========\r\n");
 
     /* Check EEPROM ready */
@@ -177,9 +181,14 @@ int Calibration_Run(void)
     }
 
     cal_loaded = 1;
+    /* Turn off current after calibration */
+    AD5667_WriteData_without(0);
+    g_current_set = 0;
+
     printf("<cal ok> %d points saved to EEPROM\r\n", ok_count);
     printf("========================================\r\n\r\n");
 
+    g_cal_running = 0;
     return 0;
 }
 

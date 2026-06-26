@@ -26,6 +26,8 @@
 #include "scmd_dvm.h"
 #include "calibration.h"
 
+extern volatile int g_cal_running;
+
 extern char buffer_rx[255];
 extern uint8_t Rec_Length;
 
@@ -196,10 +198,14 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
         }
     }
 
-    /* Set current value */
-    if (AD5667_WritData_setcurr((uint16_t)current_ma) != HAL_OK) {
-        LOG_ERROR(LOG_MOD_TASK, "Failed to set current");
-        return HAL_ERROR;
+    /* Set current value — zero uses raw DAC write to bypass +19mV offset */
+    if (current_ma < 0.5f) {
+        AD5667_WriteData_without(0);  /* DAC = 0V, truly zero current */
+    } else {
+        if (AD5667_WritData_setcurr((uint16_t)current_ma) != HAL_OK) {
+            LOG_ERROR(LOG_MOD_TASK, "Failed to set current");
+            return HAL_ERROR;
+        }
     }
 
     g_current_set = current_ma;
@@ -396,7 +402,11 @@ void Task_DataAcquisition(void *argument)
 {
     float voltage = 0.0f;
     float current = 0.0f;
-    
+
+    /* Skip DVM access during calibration to avoid bus conflict */
+    if (g_cal_running)
+        return;
+
     /* Sample ADC channels for voltage and current */
     Task_SampleADC();
     

@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "calibration.h"
+#include "ad5667.h"
 
 /* ============================= Global Variables ============================= */
 float g_voltage = 0.0f;
@@ -26,6 +27,9 @@ void Config_Init(void)
     g_temperature = 0.0f;
     g_current_set = CFG_CURRENT_DEFAULT_MA;
     g_current_disp = 0.0f;
+
+    /* Zero DAC output on startup */
+    AD5667_WriteData_without(0);
 
     /* Load calibration from EEPROM if available */
     Calibration_Load();
