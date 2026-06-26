@@ -60,7 +60,7 @@ static void Task_ProcessUARTCommand(void)
     buffer_rx[length] = '\0';
     LOG_DEBUG(LOG_MOD_TASK, "UART command received: %s", buffer_rx);
 
-    if (strstr(buffer_rx, "set_curr") != NULL) {
+    if (strstr(buffer_rx, ">set_curr") != NULL) {
         float request_ma = Task_ParseCurrentValue(buffer_rx);
         if (request_ma >= 0.0f) {
             if (Task_ApplyCurrentSetting(request_ma) == HAL_OK) {
@@ -74,9 +74,9 @@ static void Task_ProcessUARTCommand(void)
     } else if (strstr(buffer_rx, ">help") != NULL) {
         printf("\r\n");
         printf("========== Core Board Eload  ==========\r\n");
-        printf(" set_curr(XXXX.XXmA)   Set target current\r\n");
-        printf("   e.g. set_curr(1000.00mA) → 1A\r\n");
-        printf("   e.g. set_curr(5000.00mA) → 5A\r\n");
+        printf(" >set_curr(XXXX.XXmA)  Set target current\r\n");
+        printf("   e.g. >set_curr(1000.00mA) -> 1A\r\n");
+        printf("   e.g. >set_curr(5000.00mA) -> 5A\r\n");
         printf("   Range: 0 ~ %d mA\r\n", CFG_MAX_CURRENT_MA);
         printf("\r\n");
         printf(" >help                 Show this help\r\n");
