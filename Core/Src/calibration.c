@@ -66,8 +66,8 @@ static int set_current_raw(float ma)
 
     g_current_set    = ma;
 
-    /* Wait for output to settle (~500ms) */
-    HAL_Delay(500);
+    /* Wait for output to settle (~1s) */
+    HAL_Delay(1000);
 
     return 0;
 }
