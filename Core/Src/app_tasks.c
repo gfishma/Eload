@@ -64,7 +64,7 @@ static void Task_ProcessUARTCommand(void)
         float request_ma = Task_ParseCurrentValue(buffer_rx);
         if (request_ma >= 0.0f) {
             if (Task_ApplyCurrentSetting(request_ma) == HAL_OK) {
-                LOG_INFO(LOG_MOD_TASK, "UART current command applied: %.2f mA", g_current_set);
+                LOG_INFO(LOG_MOD_TASK, "UART current command applied: %.2f mA", request_ma);
             } else {
                 LOG_ERROR(LOG_MOD_TASK, "Failed to apply UART current command");
             }
@@ -90,10 +90,7 @@ static void Task_ProcessUARTCommand(void)
     } else if (strstr(buffer_rx, ">status") != NULL) {
         printf("\r\n");
         printf("========== Current Status ==========\r\n");
-        if (Calibration_IsLoaded())
-            printf(" Set Current:   %.0f mA -> %.0f mA (%.2f A)\r\n", g_user_target, g_current_set, g_user_target / 1000.0f);
-        else
-            printf(" Set Current:   %.0f mA (%.2f A)\r\n", g_current_set, g_current_set / 1000.0f);
+        printf(" Set Current:   %.0f mA (%.2f A)\r\n", g_user_target, g_user_target / 1000.0f);
         printf(" Meas Voltage:  %.2f V\r\n", g_voltage);
         printf(" Meas Current:  %.2f A\r\n", g_current);
         printf(" Meas Power:    %.2f W\r\n", g_voltage * g_current);
@@ -216,7 +213,7 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
 
     g_current_set = current_ma;
     g_user_target = user_target;
-    LOG_INFO(LOG_MOD_TASK, "Current set to: %.2f mA (target: %.2f mA)", current_ma, user_target);
+    LOG_INFO(LOG_MOD_TASK, "Current set to: %.2f mA", user_target);
     
     return HAL_OK;
 }
@@ -251,7 +248,7 @@ void Task_DisplayUpdate(void *argument)
     LCD_ShowxNum(CFG_POWER_FRAC_DISPLAY_X, CFG_POWER_FRAC_DISPLAY_Y, (uint32_t)(power_frac * 1000), 3, 32, 1);
 
     /* Display current setting value (mA) under the setting label */
-    LCD_ShowxNum(CFG_CURRENT_SET_DISPLAY_X, CFG_CURRENT_SET_DISPLAY_Y, (uint32_t)g_current_set, 5, 32, 0);
+    LCD_ShowxNum(CFG_CURRENT_SET_DISPLAY_X, CFG_CURRENT_SET_DISPLAY_Y, (uint32_t)g_user_target, 5, 32, 0);
     
     /* Display current mode and step value separately for better alignment */
     // char mode_text[16];
