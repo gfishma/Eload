@@ -77,6 +77,7 @@ extern float g_current;
 extern float g_temperature;
 extern float g_current_set;
 extern float g_current_disp;
+extern float g_user_target;
 extern uint32_t g_acquisition_count;
 
 /**

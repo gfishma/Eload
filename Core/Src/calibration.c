@@ -66,8 +66,8 @@ static int set_current_raw(float ma)
 
     g_current_set    = ma;
 
-    /* Wait for output to settle (~200ms) */
-    HAL_Delay(200);
+    /* Wait for output to settle (~500ms) */
+    HAL_Delay(500);
 
     return 0;
 }
@@ -89,7 +89,7 @@ static int measure_point(float setpoint_ma, float *pMeasured_ma)
         if (val < 0.0f)
             continue;
         samples[valid++] = val;
-        HAL_Delay(50);
+        HAL_Delay(100);
     }
 
     if (valid < 3)

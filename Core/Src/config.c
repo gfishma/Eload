@@ -15,6 +15,7 @@ float g_current = 0.0f;
 float g_temperature = 0.0f;
 float g_current_set = 0.0f;
 float g_current_disp = 0.0f;
+float g_user_target = 0.0f;
 uint32_t g_acquisition_count = 0;
 
 /**

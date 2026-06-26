@@ -90,7 +90,10 @@ static void Task_ProcessUARTCommand(void)
     } else if (strstr(buffer_rx, ">status") != NULL) {
         printf("\r\n");
         printf("========== Current Status ==========\r\n");
-        printf(" Set Current:   %.0f mA (%.2f A)\r\n", g_current_set, g_current_set / 1000.0f);
+        if (Calibration_IsLoaded())
+            printf(" Set Current:   %.0f mA -> %.0f mA (%.2f A)\r\n", g_user_target, g_current_set, g_user_target / 1000.0f);
+        else
+            printf(" Set Current:   %.0f mA (%.2f A)\r\n", g_current_set, g_current_set / 1000.0f);
         printf(" Meas Voltage:  %.2f V\r\n", g_voltage);
         printf(" Meas Current:  %.2f A\r\n", g_current);
         printf(" Meas Power:    %.2f W\r\n", g_voltage * g_current);
@@ -187,6 +190,9 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
         return HAL_ERROR;
     }
 
+    /* Save original target before calibration correction */
+    float user_target = current_ma;
+
     /* Apply calibration correction if available */
     if (Calibration_IsLoaded())
     {
@@ -209,7 +215,8 @@ HAL_StatusTypeDef Task_ApplyCurrentSetting(float current_ma)
     }
 
     g_current_set = current_ma;
-    LOG_INFO(LOG_MOD_TASK, "Current set to: %.2f mA", current_ma);
+    g_user_target = user_target;
+    LOG_INFO(LOG_MOD_TASK, "Current set to: %.2f mA (target: %.2f mA)", current_ma, user_target);
     
     return HAL_OK;
 }
