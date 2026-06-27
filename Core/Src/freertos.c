@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_includes.h"
+#include "eload_ui.h"
 #include "reent.h"
 /* USER CODE END Includes */
 
@@ -195,31 +196,9 @@ void Display_Task(void const * argument)
   /* USER CODE BEGIN Display_Task */
   LOG_INFO(LOG_MOD_TASK, "Display task started");
 
-  /* Initialize LCD display layout */
-  lcd_show_chinese(0, 0, 25, 32);           /* 电 */
-  lcd_show_chinese(40, 0, 26, 32);          /* 压 */
-  LCD_ShowString(135, 0, 240, 32, 32, ".");
-  LCD_ShowString(210, 0, 240, 32, 32, "V");
+  /* LCD layout managed by eload_ui_display_init() */
+  eload_ui_display_init();
 
-  lcd_show_chinese(0, 55, 25, 32);          /* 电 */
-  lcd_show_chinese(40, 55, 37, 32);         /* 流 */
-  LCD_ShowString(135, 55, 240, 32, 32, ".");
-  LCD_ShowString(210, 55, 240, 32, 32, "A");
-
-  lcd_show_chinese(0, 110, 18, 32);         /* 功 */
-  lcd_show_chinese(40, 110, 32, 32);        /* 率 */
-  LCD_ShowString(135, 110, 240, 32, 32, ".");
-  LCD_ShowString(210, 110, 240, 32, 32, "W");
-
-  lcd_show_chinese(0, 165, 38, 32);         /* 设 */
-  lcd_show_chinese(40, 165, 39, 32);        /* 置 */
-  LCD_ShowString(200, 165, 240, 32, 32, "mA");
-
-  lcd_show_chinese(0, 200, 38, 32);         /* 设 */
-  lcd_show_chinese(40, 200, 39, 32);        /* 置 */
-  lcd_show_chinese(80, 200, 40, 32);        /* 步 */
-  lcd_show_chinese(120, 200, 41, 32);       /* 进 */
-  
   /* Infinite loop */
   for(;;)
   {
