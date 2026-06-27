@@ -28,8 +28,9 @@ static int cal_loaded = 0;
 
 /* Predefined calibration setpoints (mA) */
 static const float cal_setpoints[CAL_POINT_COUNT] = {
-    50.0f, 100.0f, 200.0f, 500.0f,
-    800.0f, 1200.0f, 1600.0f, 2000.0f
+    50.0f, 100.0f, 150.0f, 200.0f, 300.0f, 400.0f,
+    500.0f, 650.0f, 800.0f, 900.0f, 1000.0f, 1150.0f,
+    1300.0f, 1500.0f, 1700.0f, 2000.0f
 };
 
 /* ---- Internal helpers ---- */
@@ -181,9 +182,12 @@ int Calibration_Run(void)
     ret = Calibration_Save();
     if (ret != 0)
     {
-        printf("<cal error> EEPROM write failed\r\n");
+        printf("<cal error> EEPROM write failed code=%d\r\n", ret);
         return -4;
     }
+
+    /* Wait for EEPROM write cycle to complete */
+    HAL_Delay(10);
 
     cal_loaded = 1;
     /* Turn off current after calibration */

@@ -11,10 +11,10 @@
 #include <stdint.h>
 
 #define CAL_MAGIC        0xCA1B0001   /* Magic number to validate EEPROM data */
-#define CAL_POINT_COUNT  8            /* 8 calibration points covering 0-10A */
+#define CAL_POINT_COUNT  16           /* 16 calibration points covering 0-2A */
 #define CAL_SAMPLE_COUNT 10           /* DVM samples per point (discard hi/lo) */
 #define CAL_EEPROM_ADDR  0x0000       /* EEPROM start address */
-#define CAL_EEPROM_SIZE  64           /* Reserved EEPROM bytes */
+#define CAL_EEPROM_SIZE  256          /* Reserved EEPROM bytes */
 
 /* Calibration point: (set_current_mA, measured_current_mA) */
 typedef struct {
@@ -22,12 +22,12 @@ typedef struct {
     float meas_ma;      /* DVM measured current in mA */
 } cal_point_t;
 
-/* EEPROM calibration table layout (64 bytes) */
+/* EEPROM calibration table layout */
 typedef struct {
     uint32_t    magic;              /* 0xCA1B0001 */
     uint8_t     point_count;        /* Number of valid calibration points */
-    uint8_t     reserved[11];       /* Padding */
-    cal_point_t points[CAL_POINT_COUNT]; /* 8 × 8 bytes = 64 bytes total */
+    uint8_t     reserved[3];        /* Padding to align */
+    cal_point_t points[CAL_POINT_COUNT]; /* 16 × 8 bytes */
 } cal_data_t;
 
 /**
