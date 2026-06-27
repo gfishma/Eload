@@ -7,103 +7,130 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 PlatformIO is at `/c/Users/10631/.platformio/penv/Scripts/platformio.exe`. Python (with pyserial) is at the same path.
 
 ```bash
-# PlatformIO build (recommended)
+# PlatformIO build
 /c/Users/10631/.platformio/penv/Scripts/platformio.exe run
 
 # Flash with ST-Link
 /c/Users/10631/.platformio/penv/Scripts/platformio.exe run -t upload
 
-# Build + flash + serial monitor (full cycle)
-/c/Users/10631/.platformio/penv/Scripts/platformio.exe run -t upload && \
-  /c/Users/10631/.platformio/penv/Scripts/python.exe tools/serial_monitor.py --capture 10 --cmd "set_curr(1000mA)\r\n"
-
-# GNU Make build (needs arm-none-eabi-gcc in PATH)
-make clean && make
+# Test via serial (COM5)
+/c/Users/10631/.platformio/penv/Scripts/python.exe -c "
+import serial,time; s=serial.Serial('COM5',115200,timeout=2);
+time.sleep(1); s.write(b'>status\r\n'); time.sleep(1);
+print(s.read(999).decode('ascii',errors='replace'))"
 ```
 
-The target is `genericSTM32F407VGT6` (Cortex-M4F, 168MHz, 1MB Flash, 192KB RAM). The linker script is `STM32F407VGTx_FLASH.ld`.
+Target: `genericSTM32F407VGT6` (Cortex-M4F, 168MHz, 1MB Flash, 128KB RAM). Linker: `STM32F407VGTx_FLASH.ld`.
 
 ## Serial Monitor
 
-`tools/serial_monitor.py` captures STM32 UART output (COM4, 115200 baud):
+`tools/serial_monitor.py` captures STM32 UART output (COM5, 115200 baud):
 
 ```bash
-# Interactive mode (Ctrl+C to stop)
-python tools/serial_monitor.py
-
-# Capture 10 seconds, send a command, save to tools/logs/
-python tools/serial_monitor.py --capture 10 --cmd "set_curr(1000mA)\r\n"
-
-# Capture output after flash (verify firmware)
-python tools/serial_monitor.py --capture 5
-
-# View last log file path
-python tools/serial_monitor.py --last-log
+# Capture 10 seconds, send a command
+python tools/serial_monitor.py --capture 10 --cmd ">status\r\n"
 ```
 
-Logs are saved to `tools/logs/serial_YYYYMMDD_HHMMSS.log`. After capture, read the log file to verify firmware output.
+## Architecture (Refactored Jun 2025)
 
-## Architecture
+This is a **CC-mode electronic load** firmware on STM32F407VGT6 with **FreeRTOS** (CMSIS-RTOS v1) and STM32 HAL.
 
-This is an **electronic load controller** firmware running on STM32F407VGT6 with **FreeRTOS v10.3.1** (CMSIS-RTOS v1 wrapper) and STM32 HAL drivers. No CubeMX framework layer — HAL is used directly.
-
-### Layer Hierarchy (top→bottom)
+### File Layout
 
 ```
-Layer 5  Application     app_tasks (business logic), SCMD/DVM protocol
-Layer 4  Device Drivers  iCore/ (TFT LCD, AD5667 DAC, MCP3421 ADC, 24Cxx EEPROM,
-                          ADS124S0x ADC, CAT9555 GPIO expander, Temp sensor, PWM, W25Qxx Flash)
-Layer 3  Peripheral HAL  ADC, DAC, I2C, SPI, UART, CAN, TIM, DMA, RTC, USB OTG
-Layer 2  Framework       config, app_logger, device_manager
-Layer 1  Foundation      STM32 HAL, CMSIS, FreeRTOS
+Core/
+├── Inc/
+│   ├── eload.h          ← Core state machine, globals, protection thresholds
+│   ├── eload_ui.h       ← LCD display + keypad interface
+│   ├── calibration.h    ← 16-point piecewise linear calibration
+│   ├── config.h         ← Tunable parameters
+│   └── app_tasks.h      ← FreeRTOS task declarations
+├── Src/
+│   ├── eload.c          ← State machine: ON/OFF, DAC write, cal apply, protection
+│   ├── eload_cmd.c      ← UART command parser: >set_curr, >help, >status, >eload *
+│   ├── eload_ui.c       ← LCD refresh + 4-key debounce
+│   ├── calibration.c    ← Auto-sweep, sample, EEPROM save/load, interp apply
+│   ├── app_tasks.c      ← Thin FreeRTOS glue (delegates to eload_*)
+│   ├── config.c         ← Global init, calls eload_init()
+│   └── freertos.c       ← Task creation, Display_Task LCD init
+iCore/
+├── AD5667/              ← DAC driver (I2C2, 0x0F, 16-bit)
+├── 24cxx/               ← CAT24C08 EEPROM driver (I2C1, 0xA4, **8-bit addr**)
+├── Tftlcd/              ← TFT LCD (SPI, 240x320)
+├── Temp/                ← NTC thermistor
+└── adc_dma/             ← STM32 ADC via DMA
 ```
 
-Dependencies only flow downward. All source files should `#include "app_includes.h"` as the single entry point.
+### Key Global
 
-### FreeRTOS Tasks (6 total)
+```c
+// eload.h
+eload_t g_eload;  // single global instance with all state
+```
 
-| Task | Priority | Stack | Period | Purpose |
-|------|----------|-------|--------|---------|
-| `OLEDControl` | Normal | 512B | ~100ms | Parse UART commands (e.g. `set_curr(1500.5mA)`), control DAC output |
-| `DisplayUpdate` | Normal | 512B | ~500ms | Read global vars, update TFT LCD (voltage/current/power/setpoint) |
-| `KeyProcess` | Normal | 1024B | ~50ms | Debounce and handle SET/UP/DOWN/CONFIG keys |
-| `DataAcquisition` | Normal (1) | 1024B | ~100ms | ADC sampling via DMA, compute V/I/P, update globals |
-| `MonitorProtection` | Idle (0) | 512B | ~1s | Temperature read, compare against thresholds (60°C warn, 70°C shutdown) |
-| `SlewControl` | Normal | — | — | Current slew rate control |
+### FreeRTOS Tasks
 
-Task functions are declared in `Core/Src/freertos.c` (FreeRTOS skeleton). Business logic implementations live in `Core/Src/app_tasks.c` / `Core/Inc/app_tasks.h`.
+| Task | What it does |
+|------|-------------|
+| `OLEDControl` | Calls `eload_cmd_dispatch()` for UART command parsing |
+| `DisplayUpdate` | Calls `eload_ui_display()` to refresh LCD |
+| `KeyProcess` | Calls `eload_ui_keypad()` — SET=ON/OFF, ▲▼=adjust, CONFIG=step |
+| `DataAcquisition` | Calls `eload_read_measurements()` via DVM CH1/CH2 |
+| `MonitorProtection` | Reads NTC, calls `eload_check_protection()` |
 
-### Key Subsystems
+### Calibration System
 
-- **SCMD/DVM** (`scmd_dvm.c/h`, `Module_DVM_V2.c/h`) — precision voltage/current measurement using ADS124S0x 24-bit ADC with auto-ranging (25V/2.5V ranges) and CAT9555 GPIO expander for channel switching
-- **Current control** — AD5667 DAC drives the load circuit; `SlewControl` task manages ramp rate
-- **Display** — TFT LCD via SPI (`iCore/Tftlcd/`), shows voltage, current, power, setpoint, step size
-- **Keypad** — 4 keys (SET: mode toggle OFF→+→-→OFF; UP/DOWN: adjust current by step; CONFIG: cycle step 1/100/1000mA)
-- **Protection** — temperature monitoring with automatic output shutdown at 70°C
+16-point piecewise linear calibration, 0-2A (expandable to 13A):
 
-### Key Global Variables
+```
+50, 100, 150, 200, 300, 400, 500, 650, 800, 900,
+1000, 1150, 1300, 1500, 1700, 2000 mA
+```
 
-- `g_voltage`, `g_current` — measured values updated by DataAcquisition task
-- `g_temperature` — updated by Monitor task
-- `g_current_set` / `g_current_disp` — setpoint values
-- `cc_state` — output mode (0=OFF, 1=+, 2=-)
+- Each point: set current → wait 1s → DVM sample 10× → discard hi/lo → avg 8
+- Saved to CAT24C08 EEPROM (I2C1 addr 0xA4, **8-bit memory addressing**)
+- Applied via `Calibration_Apply(target_ma)` → returns DAC-compensated value
+- Persists across flash/reflash (external EEPROM)
+- Coeff applied in `eload_set_output()` automatically
 
-### Configuration
+### Serial Commands (all `>` prefixed)
 
-All tunable parameters are in `Core/Inc/config.h` and `Core/Src/config.c`:
-- `CFG_MAX_CURRENT_MA` (default 13000)
-- `CFG_TEMP_PROTECT_THRESHOLD` (70°C), `CFG_TEMP_WARN_THRESHOLD` (60°C)
-- Task stack sizes: `CFG_TASK_*_STACK_SIZE`
+| Command | Action |
+|---------|--------|
+| `>set_curr(XXXX.XXmA)` | Set target current |
+| `>output(on/off)` | Toggle output |
+| `>help` | Show command list |
+| `>status` | Show V/I/P/T/Cal state |
+| `>eload cal` | Run 16-point calibration |
+| `>eload info` | Print calibration table |
 
-## Coding Conventions
+### Keypad Layout
 
-- Use `app_includes.h` as the single include — do not scatter individual driver/HAL includes
-- New device drivers go in `iCore/<device>/` with `.c` and `.h`
-- Business logic goes in `app_tasks.c/h`, not directly in `freertos.c`
-- Log with `LOG_INFO(module, fmt, ...)`, `LOG_ERROR(...)`, `LOG_WARN(...)` — module tags defined in `app_logger.h`
-- HAL `Error_Handler()` disables IRQs and loops forever — use for unrecoverable faults
-- The project is generated by STM32CubeMX; `USER CODE BEGIN/END` comments mark editable regions
+| Key | Function |
+|-----|----------|
+| SET | ON/OFF toggle |
+| ▲ | Current + step |
+| ▼ | Current - step |
+| CONFIG | Cycle step 1→100→1000 mA |
 
-## Project Origin
+### Protection
 
-Generated by STM32CubeMX (`Core_board_Eload.ioc`). The `Core/` directory follows the CubeMX convention (HAL init code). Custom application code lives in `iCore/` and `Core/Src/app_*.c`. The Makefile is auto-generated, PlatformIO config is hand-maintained.
+| Type | Threshold | Action |
+|------|-----------|--------|
+| OTP | 70°C | Output OFF |
+| OVP | 30V | Output OFF |
+| OPP | 50W | Output OFF |
+
+### Critical Fixes (session history)
+
+- **EEPROM addressing**: Must use `I2C_MEMADD_SIZE_8BIT` for CAT24C08. 16-bit causes 1-byte shift → all data corrupted.
+- **DAC zero**: Use `AD5667_WriteData_without(0)` for true 0V (bypasses +19mV offset in `WritData_setcurr`).
+- **Cal load timing**: Must happen in `Config_Init()` (pre-FreeRTOS) so keypad has coefficients ready.
+- **AD9910 driver**: SPI Mode 2 (CPOL=1) with BSRR bit-bang via PE8/10/12/14/PA5. CFR3 PLL bits: EN=bit8, VCO=bits26:24, N=bits7:1.
+
+### 13A Upgrade Checklist
+
+When high-power supply arrives, change 3 lines:
+1. `calibration.h`: `CAL_POINT_COUNT` → 24+
+2. `calibration.c`: replace `cal_setpoints[]` with 24-pt 0-13A array
+3. `config.h` + `eload.h`: `MAX_CURRENT` → 13000
