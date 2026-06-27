@@ -39,7 +39,7 @@ void eload_ui_display(void)
 
     /* Output state + Setpoint (mA) */
     LCD_ShowString(80, CFG_CURRENT_SET_DISPLAY_Y, 52, 32, 32,
-        g_eload.output ? "ON" : "OFF");
+        g_eload.output ? "ON " : "OFF");
     LCD_ShowxNum(135, CFG_CURRENT_SET_DISPLAY_Y, (uint32_t)g_eload.setpoint_ma, 5, 32, 0);
 
     /* Step value */

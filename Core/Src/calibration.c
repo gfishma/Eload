@@ -189,6 +189,9 @@ int Calibration_Run(void)
     /* Turn off current after calibration */
     AD5667_WriteData_without(0);
     g_current_set = 0;
+    g_eload.output      = ELOAD_OUTPUT_OFF;
+    g_eload.setpoint_ma = 0.0f;
+    g_eload.dac_ma      = 0.0f;
 
     printf("<cal ok> %d points saved to EEPROM\r\n", ok_count);
     printf("========================================\r\n\r\n");
