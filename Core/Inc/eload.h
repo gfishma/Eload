@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 /* ---- Constants ---- */
-#define ELOAD_MAX_CURRENT_MA    2000    /* 5V power supply limit */
+#define ELOAD_MAX_CURRENT_MA    2000     /* Change to 13000 for full range */
 
 /* ---- Types ---- */
 typedef enum {

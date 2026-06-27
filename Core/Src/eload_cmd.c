@@ -74,7 +74,7 @@ void eload_cmd_dispatch(const char *buf)
         printf(" >status               Show current status\r\n");
         printf("\r\n");
         printf("---- Calibration ----\r\n");
-        printf(" >eload cal            Run (8 pts, 0~2A)\r\n");
+        printf(" >eload cal            Run (16 pts, 0~2A)\r\n");
         printf(" >eload info           Show cal table\r\n");
         printf("====================================\r\n\r\n");
     }

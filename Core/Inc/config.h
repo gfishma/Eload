@@ -17,7 +17,7 @@ extern "C" {
 #include <stddef.h>
 
 /* ============================= Current Control ============================= */
-#define CFG_MAX_CURRENT_MA              2000        /* Maximum current limit (mA) - limited for 5V testing */
+#define CFG_MAX_CURRENT_MA              2000        /* Limit for 5V supply; change to 13000 for full range */
 #define CFG_CURRENT_OVERFLOW_LIMIT      11001       /* Current overflow threshold */
 #define CFG_CURRENT_DEFAULT_MA          0.0f        /* Default current setting */
 #define CFG_CURRENT_PARSE_DIVISOR       10          /* Decimal parsing divisor */
