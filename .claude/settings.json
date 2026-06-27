@@ -13,7 +13,8 @@
       "Read(//c/Users/10631/.platformio/**)",
       "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init; reset halt; stm32f4x mass_erase 0; exit\")",
       "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init\" -c \"reset halt\" -c \"flash erase_sector 0 0 4\" -c \"exit\")",
-      "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init\" -c \"reset halt\" -c \"flash erase_sector 0 0 11\" -c \"exit\")"
+      "Bash(/c/Users/10631/.platformio/packages/tool-openocd/bin/openocd.exe -f interface/stlink.cfg -f target/stm32f4x.cfg -c \"init\" -c \"reset halt\" -c \"flash erase_sector 0 0 11\" -c \"exit\")",
+      "Bash(/c/Users/10631/.platformio/penv/Scripts/platformio.exe run *)"
     ]
   }
 }
