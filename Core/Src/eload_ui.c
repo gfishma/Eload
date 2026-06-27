@@ -75,6 +75,7 @@ void eload_ui_display_init(void)
 /* ---- Keypad ---- */
 
 static uint8_t  step_idx = 0;
+static uint8_t  key_set_pressed = 0;
 static uint8_t  key_up_pressed = 0;
 static uint8_t  key_down_pressed = 0;
 static uint8_t  key_config_pressed = 0;
@@ -82,9 +83,18 @@ static const uint16_t step_values[] = {1, 100, 1000};
 
 void eload_ui_keypad(void)
 {
+    uint8_t set   = KEY_SET;
     uint8_t up    = KEY_UP1;
     uint8_t down  = KEY_DOWM;
     uint8_t conf  = KEY_CONFIG;
+
+    /* SET: toggle output ON/OFF */
+    if (set && !key_set_pressed)
+    {
+        eload_set_output(g_eload.output ? ELOAD_OUTPUT_OFF : ELOAD_OUTPUT_ON);
+        key_set_pressed = 1;
+    }
+    if (!set) key_set_pressed = 0;
 
     /* UP: increase current */
     if (up && !key_up_pressed)

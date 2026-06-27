@@ -33,7 +33,9 @@ void eload_init(void)
     g_eload.ovp_triggered = 0;
     g_eload.opp_triggered = 0;
 
-    /* Calibration loaded later — EEPROM needs FreeRTOS started */
+    /* Load calibration from EEPROM */
+    Calibration_Load();
+    g_eload.cal_loaded = Calibration_IsLoaded();
 }
 
 void eload_set_output(eload_output_t on)

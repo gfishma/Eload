@@ -8,7 +8,6 @@
 #include "app_tasks.h"
 #include "eload.h"
 #include "eload_ui.h"
-#include "calibration.h"
 #include "config.h"
 #include "app_logger.h"
 #include "ad5667.h"
@@ -48,20 +47,9 @@ void Tasks_Initialize(void)
     /* Called by MX_FREERTOS_Init — one-time task setup */
 }
 
-static uint8_t cal_load_done = 0;
-
 void Task_OLEDControl(void *argument)
 {
     (void)argument;
-
-    /* One-time: load calibration after FreeRTOS starts */
-    if (!cal_load_done)
-    {
-        Calibration_Load();
-        g_eload.cal_loaded = Calibration_IsLoaded();
-        cal_load_done = 1;
-    }
-
     Task_ProcessUARTCommand();
 }
 
