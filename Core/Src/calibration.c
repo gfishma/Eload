@@ -9,6 +9,7 @@
  */
 
 #include "calibration.h"
+#include "eload.h"
 #include "24cxx.h"
 #include "ad5667.h"
 #include "scmd_dvm.h"
@@ -65,6 +66,8 @@ static int set_current_raw(float ma)
     AD5667_WritData_setcurr((uint16_t)ma);
 
     g_current_set    = ma;
+    g_eload.setpoint_ma = ma;  /* update LCD during calibration */
+    g_eload.dac_ma      = ma;
 
     /* Wait for output to settle (~1s) */
     HAL_Delay(1000);
@@ -105,6 +108,8 @@ static int measure_point(float setpoint_ma, float *pMeasured_ma)
         sum += samples[i];
 
     *pMeasured_ma = sum / (float)mid_count;
+    g_eload.i_meas = *pMeasured_ma / 1000.0f;  /* live LCD during cal */
+    eload_update_power();
     return 0;
 }
 
