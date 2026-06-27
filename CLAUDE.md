@@ -126,8 +126,6 @@ eload_t g_eload;  // single global instance with all state
 - **EEPROM addressing**: Must use `I2C_MEMADD_SIZE_8BIT` for CAT24C08. 16-bit causes 1-byte shift → all data corrupted.
 - **DAC zero**: Use `AD5667_WriteData_without(0)` for true 0V (bypasses +19mV offset in `WritData_setcurr`).
 - **Cal load timing**: Must happen in `Config_Init()` (pre-FreeRTOS) so keypad has coefficients ready.
-- **AD9910 driver**: SPI Mode 2 (CPOL=1) with BSRR bit-bang via PE8/10/12/14/PA5. CFR3 PLL bits: EN=bit8, VCO=bits26:24, N=bits7:1.
-
 ### 13A Upgrade Checklist
 
 When high-power supply arrives, change 3 lines:
