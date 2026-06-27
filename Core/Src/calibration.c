@@ -92,6 +92,8 @@ static int measure_point(float setpoint_ma, float *pMeasured_ma)
         if (val < 0.0f)
             continue;
         samples[valid++] = val;
+        g_eload.i_meas = val / 1000.0f;  /* live LCD */
+        eload_update_power();
         HAL_Delay(100);
     }
 
@@ -108,8 +110,6 @@ static int measure_point(float setpoint_ma, float *pMeasured_ma)
         sum += samples[i];
 
     *pMeasured_ma = sum / (float)mid_count;
-    g_eload.i_meas = *pMeasured_ma / 1000.0f;  /* live LCD during cal */
-    eload_update_power();
     return 0;
 }
 
