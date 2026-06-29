@@ -105,8 +105,8 @@ void eload_update_power(void)
 
 void eload_check_protection(void)
 {
-    /* Over-temperature: 70°C */
-    if (g_eload.temp_c > 70.0f && !g_eload.otp_triggered)
+    /* Over-temperature: 85°C (IRFP260N Tj_max=175°C, safe margin) */
+    if (g_eload.temp_c > 85.0f && !g_eload.otp_triggered)
     {
         g_eload.otp_triggered = 1;
         g_eload.output = ELOAD_OUTPUT_OFF;
@@ -115,23 +115,23 @@ void eload_check_protection(void)
         printf("<eload OTP! temperature=%.1fC, output disabled\r\n", g_eload.temp_c);
     }
 
-    /* Over-voltage: 30V */
-    if (g_eload.v_meas > 30.0f && !g_eload.ovp_triggered)
+    /* Over-voltage: 60V (IRFP260N Vds=200V, safety margin 3x) */
+    if (g_eload.v_meas > 60.0f && !g_eload.ovp_triggered)
     {
         g_eload.ovp_triggered = 1;
         g_eload.output = ELOAD_OUTPUT_OFF;
         AD5667_WriteData_without(0);
         g_eload.dac_ma = 0.0f;
-        printf("<eload OVP! voltage=%.2fV, output disabled\r\n", g_eload.v_meas);
+        printf("<eload OVP! %.1fV, output off\r\n", g_eload.v_meas);
     }
 
-    /* Over-power: 50W */
-    if (g_eload.p_meas > 50.0f && !g_eload.opp_triggered)
+    /* Over-power: 100W */
+    if (g_eload.p_meas > 100.0f && !g_eload.opp_triggered)
     {
         g_eload.opp_triggered = 1;
         g_eload.output = ELOAD_OUTPUT_OFF;
         AD5667_WriteData_without(0);
         g_eload.dac_ma = 0.0f;
-        printf("<eload OPP! power=%.2fW, output disabled\r\n", g_eload.p_meas);
+        printf("<eload OPP! %.1fW, output off\r\n", g_eload.p_meas);
     }
 }

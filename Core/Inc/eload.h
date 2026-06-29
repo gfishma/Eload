@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 /* ---- Constants ---- */
-#define ELOAD_MAX_CURRENT_MA    2000     /* Change to 13000 for full range */
+#define ELOAD_MAX_CURRENT_MA    10000    /* 10A */
 
 /* ---- Types ---- */
 typedef enum {

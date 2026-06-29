@@ -28,9 +28,10 @@ static int cal_loaded = 0;
 
 /* Predefined calibration setpoints (mA) */
 static const float cal_setpoints[CAL_POINT_COUNT] = {
-    50.0f, 100.0f, 150.0f, 200.0f, 300.0f, 400.0f,
-    500.0f, 650.0f, 800.0f, 900.0f, 1000.0f, 1150.0f,
-    1300.0f, 1500.0f, 1700.0f, 2000.0f
+    50.0f, 100.0f, 150.0f, 200.0f,    /* 0-200mA */
+    300.0f, 500.0f, 800.0f, 1200.0f, 1600.0f, 2000.0f,  /* 200mA-2A */
+    3000.0f, 4000.0f, 5000.0f, 6000.0f, 7000.0f,       /* 2A-7A */
+    8000.0f, 8500.0f, 9000.0f, 9500.0f, 10000.0f       /* 7A-10A */
 };
 
 /* ---- Internal helpers ---- */

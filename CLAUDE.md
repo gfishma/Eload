@@ -113,22 +113,23 @@ eload_t g_eload;  // single global instance with all state
 | ▼ | Current - step |
 | CONFIG | Cycle step 1→100→1000 mA |
 
-### Protection
+### Protection (IRFP260N MOSFET)
 
 | Type | Threshold | Action |
 |------|-----------|--------|
-| OTP | 70°C | Output OFF |
-| OVP | 30V | Output OFF |
-| OPP | 50W | Output OFF |
+| OVP | 60V (IRFP260N Vds=200V) | Output OFF |
+| OPP | 100W (Pd=300W) | Output OFF |
+| OTP | 85°C (Tj_max=175°C) | Output OFF |
+| Imax | 10A (Id=50A) | Clamp |
+
+Protection status visible via `>status` command.
+
+### Calibration Range
+
+20 points, 0-10A. `CFG_MAX_CURRENT_MA` = 10000.
 
 ### Critical Fixes (session history)
 
 - **EEPROM addressing**: Must use `I2C_MEMADD_SIZE_8BIT` for CAT24C08. 16-bit causes 1-byte shift → all data corrupted.
 - **DAC zero**: Use `AD5667_WriteData_without(0)` for true 0V (bypasses +19mV offset in `WritData_setcurr`).
 - **Cal load timing**: Must happen in `Config_Init()` (pre-FreeRTOS) so keypad has coefficients ready.
-### 13A Upgrade Checklist
-
-When high-power supply arrives, change 3 lines:
-1. `calibration.h`: `CAL_POINT_COUNT` → 24+
-2. `calibration.c`: replace `cal_setpoints[]` with 24-pt 0-13A array
-3. `config.h` + `eload.h`: `MAX_CURRENT` → 13000

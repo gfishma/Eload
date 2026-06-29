@@ -74,7 +74,7 @@ void eload_cmd_dispatch(const char *buf)
         printf(" >status               Show current status\r\n");
         printf("\r\n");
         printf("---- Calibration ----\r\n");
-        printf(" >eload cal            Run (16 pts, 0~2A)\r\n");
+        printf(" >eload cal            Run (20 pts, 0-10A)\r\n");
         printf(" >eload info           Show cal table\r\n");
         printf("====================================\r\n\r\n");
     }
@@ -89,6 +89,11 @@ void eload_cmd_dispatch(const char *buf)
         printf(" Meas Power:   %.2f W\r\n", g_eload.p_meas);
         printf(" Temperature:  %.1f C\r\n", g_eload.temp_c);
         printf(" Calibration:  %s\r\n", g_eload.cal_loaded ? "ACTIVE" : "NONE");
+        printf("\r\n");
+        printf("---- Protection ----\r\n");
+        printf(" OVP(%.0fV):  %s\r\n", 60.0, g_eload.ovp_triggered ? "TRIP" : "OK");
+        printf(" OPP(%.0fW):  %s\r\n", 100.0, g_eload.opp_triggered ? "TRIP" : "OK");
+        printf(" OTP(%.0fC):  %s\r\n", 85.0, g_eload.otp_triggered ? "TRIP" : "OK");
         printf("============================\r\n\r\n");
     }
     else if (strstr(buf, ">eload cal"))

@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #define CAL_MAGIC        0xCA1B0001   /* Magic number to validate EEPROM data */
-#define CAL_POINT_COUNT  16           /* 16 pts for 0-2A; change to 24+ for 0-13A */
+#define CAL_POINT_COUNT  20           /* 20 pts, 0-10A */
 #define CAL_SAMPLE_COUNT 10           /* DVM samples per point (discard hi/lo) */
 #define CAL_EEPROM_ADDR  0x0000       /* EEPROM start address */
 #define CAL_EEPROM_SIZE  256          /* Reserved EEPROM bytes */
