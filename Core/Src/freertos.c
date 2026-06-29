@@ -26,7 +26,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_includes.h"
-#include "eload_ui.h"
 #include "reent.h"
 /* USER CODE END Includes */
 
@@ -195,9 +194,6 @@ void Display_Task(void const * argument)
 {
   /* USER CODE BEGIN Display_Task */
   LOG_INFO(LOG_MOD_TASK, "Display task started");
-
-  /* LCD layout managed by eload_ui_display_init() */
-  eload_ui_display_init();
 
   /* Infinite loop */
   for(;;)

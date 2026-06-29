@@ -6,6 +6,7 @@
  */
 
 #include "eload.h"
+#include "eload_ui.h"
 #include "ad5667.h"
 #include "scmd_dvm.h"
 #include "calibration.h"
@@ -36,6 +37,9 @@ void eload_init(void)
     /* Load calibration from EEPROM */
     Calibration_Load();
     g_eload.cal_loaded = Calibration_IsLoaded();
+
+    /* Init LCD layout (once, before FreeRTOS) */
+    eload_ui_display_init();
 }
 
 void eload_set_output(eload_output_t on)
